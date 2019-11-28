@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 final secondaryColor = const Color(0xFF03a9f4);
 final primaryColor = const Color(0xFFe1f5fe); //cell color
 final totalDays = 100;
+final FlutterSecureStorage storage = FlutterSecureStorage();
+
 class TimeSheet extends StatefulWidget {
   @override
   _TimeSheetState createState() => _TimeSheetState();
@@ -14,17 +17,25 @@ class _TimeSheetState extends State<TimeSheet> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final String value = await storage.read(key: 'count');
+      daysCount = num.parse(value) ?? 0;
+    });
     mapDateSelections();
+    setState(() {});
   }
-  calculateDaysCount(){
+
+  calculateDaysCount() async {
     daysCount = 0;
-    for(num i = 0;i<=daysSelected.length;i++){
-      if(daysSelected[i]==true){
+    for (num i = 0; i <= daysSelected.length; i++) {
+      if (daysSelected[i] == true) {
         daysCount++;
       }
     }
+    await storage.write(key: 'count', value: daysCount.toString());
   }
-  onCellTapped(String selectedDate) {
+
+  onCellTapped(String selectedDate) async {
     num value;
     if (selectedDate.substring(0, 1) == '0') {
       value = num.parse(
@@ -36,7 +47,7 @@ class _TimeSheetState extends State<TimeSheet> {
       );
     }
     daysSelected[value] = !daysSelected[value];
-    calculateDaysCount();
+    await calculateDaysCount();
     setState(() {});
   }
 
@@ -47,8 +58,13 @@ class _TimeSheetState extends State<TimeSheet> {
   }
 
   mapDateSelections() {
-    for (num i = 1; i < totalDays+1; i++) {
-      daysSelected[i] = false;
+    for (num i = 1; i < totalDays + 1; i++) {
+      if(i<daysCount){
+        daysSelected[i] = true;
+      }
+      else{
+        daysSelected[i] = false;
+      }
     }
   }
 
@@ -77,8 +93,9 @@ class _TimeSheetState extends State<TimeSheet> {
   }
 
   List<GridCell> prepareGrid() {
+    mapDateSelections();
     List<GridCell> gridCells = <GridCell>[];
-    for (num i = 1; i < totalDays+1; i++) {
+    for (num i = 1; i < totalDays + 1; i++) {
       gridCells.add(
         GridCell(
           textValue: i.toString().padLeft(2, '0'),
@@ -130,7 +147,8 @@ class _TimeSheetState extends State<TimeSheet> {
                 children: <Widget>[
                   Container(
                     child: GridText(
-                      textContent: daysCount!=0?'Days Completed  :  $daysCount':'',
+                      textContent:
+                          daysCount != 0 ? 'Days Completed  :  $daysCount' : '',
                       fontSize: 18,
                       textColor: secondaryColor,
                     ),
@@ -158,11 +176,7 @@ class _TimeSheetState extends State<TimeSheet> {
 }
 
 class GridText extends StatelessWidget {
-  const GridText({
-    this.textContent,
-    this.fontSize = 23,
-    this.textColor
-  });
+  const GridText({this.textContent, this.fontSize = 23, this.textColor});
   final String textContent;
   final double fontSize;
   final Color textColor;
