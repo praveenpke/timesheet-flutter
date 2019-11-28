@@ -20,9 +20,9 @@ class _TimeSheetState extends State<TimeSheet> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final String value = await storage.read(key: 'count');
       daysCount = num.parse(value) ?? 0;
+      mapDateSelections();
+      setState(() {});
     });
-    mapDateSelections();
-    setState(() {});
   }
 
   calculateDaysCount() async {
@@ -59,10 +59,9 @@ class _TimeSheetState extends State<TimeSheet> {
 
   mapDateSelections() {
     for (num i = 1; i < totalDays + 1; i++) {
-      if(i<daysCount){
+      if (i < daysCount) {
         daysSelected[i] = true;
-      }
-      else{
+      } else {
         daysSelected[i] = false;
       }
     }
@@ -93,7 +92,6 @@ class _TimeSheetState extends State<TimeSheet> {
   }
 
   List<GridCell> prepareGrid() {
-    mapDateSelections();
     List<GridCell> gridCells = <GridCell>[];
     for (num i = 1; i < totalDays + 1; i++) {
       gridCells.add(
