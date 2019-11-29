@@ -12,13 +12,15 @@ class TimeSheet extends StatefulWidget {
 }
 
 class _TimeSheetState extends State<TimeSheet> {
+  bool isDataExist = false;
   final Map<num, bool> daysSelected = <num, bool>{};
   num daysCount = 0;
   @override
   void initState() {
     super.initState();
+    mapDateSelections();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final String value = await storage.read(key: 'count');
+      final String value = await storage.read(key: 'count')??'0';
       daysCount = num.parse(value) ?? 0;
       mapDateSelections();
       setState(() {});
@@ -59,11 +61,10 @@ class _TimeSheetState extends State<TimeSheet> {
 
   mapDateSelections() {
     for (num i = 1; i < totalDays + 1; i++) {
-      if (i < daysCount) {
-        daysSelected[i] = true;
-      } else {
-        daysSelected[i] = false;
-      }
+      daysSelected[i] = false;
+     if (i < daysCount+1) {
+       daysSelected[i] = true;
+     }
     }
   }
 
